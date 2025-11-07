@@ -1,0 +1,41 @@
+<!--
+    This sample policy records error details in the response headers to the client. This can be useful in troubleshooting.
+    Credit to this awesome policy goes to Shaun Callighan (github.com/implodingduck)
+-->
+
+<policies>
+    <inbound>
+        <base />
+    </inbound>
+    <backend>
+        <forward-request />
+    </backend>
+    <outbound>
+        <base />
+    </outbound>
+    <!-- Handle exceptions and customize error responses  -->
+    <on-error>
+        <base />
+        <set-header name="X-OperationName" exists-action="override">
+            <value>@( context.Operation.Name )</value>
+        </set-header>
+        <set-header name="X-OperationMethod" exists-action="override">
+            <value>@( context.Operation.Method )</value>
+        </set-header>
+        <set-header name="X-OperationUrl" exists-action="override">
+            <value>@( context.Operation.UrlTemplate )</value>
+        </set-header>
+        <set-header name="X-ApiName" exists-action="override">
+            <value>@( context.Api.Name )</value>
+        </set-header>
+        <set-header name="X-ApiPath" exists-action="override">
+            <value>@( context.Api.Path )</value>
+        </set-header>
+        <set-header name="X-LastErrorMessage" exists-action="override">
+            <value>@( context.LastError.Message )</value>
+        </set-header>
+        <set-header name="X-Entra-Id" exists-action="override">
+            <value>@( context.Variables.GetValueOrDefault<string>("appId") )</value>
+        </set-header>
+    </on-error>
+</policies>

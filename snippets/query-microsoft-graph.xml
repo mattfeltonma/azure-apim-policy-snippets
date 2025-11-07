@@ -1,0 +1,32 @@
+<!--
+    This sample policy enforces Entra ID authentication and authorization to the Azure OpenAI Service. 
+    It limits the authorization tokens issued by the organization's tenant for Cognitive Services.
+    The authorization token is passed on to the Azure OpenAI Service ensuring authorization to the actions within
+    the service are limited to the permissions defined in Azure RBAC.
+
+    You must provide values for the AZURE_OAI_SERVICE_NAME and TENANT_ID parameters.
+-->
+<policies>
+    <inbound>
+        <base />
+        <send-request mode="new" response-variable-name="microsoftgraph" timeout="20" ignore-error="false">
+            <!-- Sample here pulls userPrincipalName from original request body -->
+            <set-url>@("https://graph.microsoft.com/v1.0/users/" + context.Request.Body?.As<JObject>(true)?["user_security_context"]["end_user_id"])</set-url>
+            <set-method>GET</set-method>
+            <!-- User APIM's managed identity to authenticate to Microsoft Graph -->
+            <authentication-managed-identity resource="https://graph.microsoft.com" />
+        </send-request>
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <!-- Dump resopnse from Microsoft Graph API to body -->
+        <set-body>@(((IResponse)context.Variables["graphResponse"]).Body.As<JObject>(true).ToString())</set-body>
+        <base />
+    </outbound>
+    <on-error>
+        <base />
+    </on-error>
+</policies>
+        

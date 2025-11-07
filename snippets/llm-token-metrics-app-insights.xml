@@ -1,0 +1,40 @@
+<!--
+    This sample policy enforces throttling based on the Entra ID application id of the service principal or managed
+    identity extracted from the access token. Applications are throttled when their token usage approaches the value for
+    TOKEN_LIMIT set in the policy over the course of a minute.Entra ID authentication is enforced by validating the presence of
+    an access token issued by the company's Entra ID tenant.
+
+    You must provide value for the TENANT_ID. You must also configure the backend service to point to.
+-->
+<policies>
+    <inbound>
+        <base />
+        <set-backend-service base-url="https://{{AZURE_OAI_SERVICE_NAME}}.openai.azure.com/openai" />
+        <validate-jwt header-name="Authorization" failed-validation-httpcode="403" failed-validation-error-message="Forbidden">
+            <openid-config url="https://login.microsoftonline.com/{{TENANT_ID}}/v2.0/.well-known/openid-configuration" />
+            <issuers>
+                <issuer>https://sts.windows.net/{{TENANT_ID}}/</issuer>
+            </issuers>
+        </validate-jwt>
+        <!-- Extract the application id from the Entra ID access token -->
+        <set-variable name="appId" value="@(context.Request.Headers.GetValueOrDefault("Authorization",string.Empty).Split(' ').Last().AsJwt().Claims.GetValueOrDefault("appid", string.Empty))" />
+        <!-- Extract the model name from the URL -->
+        <set-variable name="uriPath" value="@(context.Request.OriginalUrl.Path)" />
+        <set-variable name="deploymentName" value="@(System.Text.RegularExpressions.Regex.Match((string)context.Variables["uriPath"], "/deployments/([^/]+)").Groups[1].Value)" />
+        <!-- Emit token metrics to Application Insights -->
+        <llm-emit-token-metric namespace="openai-metrics">
+            <dimension name="model" value="@(context.Variables.GetValueOrDefault<string>("deploymentName","None"))" />
+            <dimension name="client_ip" value="@(context.Request.IpAddress)" />
+            <dimension name="appId" value="@(context.Variables.GetValueOrDefault<string>("appId","00000000-0000-0000-0000-000000000000"))" />
+        </llm-emit-token-metric>
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+    </outbound>
+    <on-error>
+        <base />
+    </on-error>
+</policies>        
