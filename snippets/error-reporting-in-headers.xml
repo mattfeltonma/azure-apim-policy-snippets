@@ -1,6 +1,6 @@
 <!--
     This sample policy records error details in the response headers to the client. This can be useful in troubleshooting.
-    Credit to this awesome policy goes to Shaun Callighan (github.com/implodingduck)
+    Credit for this awesome policy goes to Shaun Callighan (github.com/implodingduck)
 -->
 
 <policies>
