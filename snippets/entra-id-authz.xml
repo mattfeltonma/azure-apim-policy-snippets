@@ -15,7 +15,7 @@
             <issuers>
                 <issuer>https://sts.windows.net/{{TENANT_ID}}/</issuer>
             </issuers>
-            <! -- Optionally enforce specific claims
+            <!-- Optionally enforce specific claims
             <required-claims>
                 <claim name="aud">
                     <value>https://cognitiveservices.azure.com</value>

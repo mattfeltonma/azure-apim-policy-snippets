@@ -4,6 +4,8 @@
     The authorization token is passed on to the Azure OpenAI Service ensuring authorization to the actions within
     the service are limited to the permissions defined in Azure RBAC.
 
+    Ensure that you validate the operation name in the API spec you have imported. Sometimes it will appear as ChatCompletion_Create
+
     You must provide values for the AZURE_OAI_SERVICE_NAME and TENANT_ID parameters.
 -->
 <policies>
@@ -23,10 +25,14 @@
             </required-claims>
             -->
         </validate-jwt>
-        <!-- > Validate the ChatCompletion request has the UserSecurityContext object and the object has the end_user_id property. This can be used for the reasons described in this blog (https://journeyofthegeek.com/2025/10/28/defender-for-ai-and-user-context/) -->
+        <!-- > Validate the ChatCompletion request has the UserSecurityContext object. If it passed validate that it includes the end_user_id property. This can be used for the reasons described in this blog (https://journeyofthegeek.com/2025/10/28/defender-for-ai-and-user-context/) -->
         <choose>
-            <when condition="@(context.Operation.Id == "chatcompletions-create" && ((context.Request.Body?.As<JObject>(true)?["user_security_context"]["end_user_id"] != null) == false))">
-                <return-response>
+            <when condition="@(context.Operation.Id.ToLower() == "chatcompletions-create" &&
+            (
+                context.Request.Body?.As<JObject>(true)?["user_security_context"] == null ||
+                context.Request.Body?.As<JObject>(true)?["user_security_context"]["end_user_id"] == null
+            ))">
+            <return-response>
                     <set-status code="400" reason="Bad Request" />
                     <set-body>@("UserSecurityContext property is required for this operation.")</set-body>
                 </return-response>
