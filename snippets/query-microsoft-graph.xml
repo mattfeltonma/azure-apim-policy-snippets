@@ -1,8 +1,7 @@
 <!--
-    This sample policy enforces Entra ID authentication and authorization to the Azure OpenAI Service. 
-    It limits the authorization tokens issued by the organization's tenant for Cognitive Services.
-    The authorization token is passed on to the Azure OpenAI Service ensuring authorization to the actions within
-    the service are limited to the permissions defined in Azure RBAC.
+    This sample policy demonstrates how to call the Microsoft Graph API from within an APIM policy
+    using the APIM's management identity. This could be used to enrich requests or responses
+    with user information stored in Entra ID.
 
     You must provide values for the AZURE_OAI_SERVICE_NAME and TENANT_ID parameters.
 -->
